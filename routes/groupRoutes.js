@@ -1,16 +1,17 @@
 const express = require("express")
-const Group = require("../models/groupModel.js")
+const Group = require("../models/groupModel.js");
+const {protect , isAdmin}= require("../middlewares/authMiddleware.js");
 const groupRouter = express.Router();
 
 //Create a new group 
-groupRouter.post("/", async()=>{
+groupRouter.post("/", protect , isAdmin ,async(req, res)=>{
   try{
     const {name, description} = req.body;
     const group = await Group.create({
       name,
       description,
-      // admin: req.user._id,
-      //members:[req.user._id]
+      admin: req.user._id,
+      members:[req.user._id]
     })
 
     const populatedGroup = await Group.findById(group._id).populate("admin", "username email").populate('members', 'username email')
