@@ -7,6 +7,7 @@ const socketio = require("socket.io");
 const socketIo = require("./socket");
 const cors = require('cors');
 const groupRouter = require("./routes/groupRoutes");
+const messageRouter = require("./routes/messageRoutes");
 dotenv.config()
 
 const app = express()
@@ -39,6 +40,7 @@ socketIo(io)
 //Routes
 app.use("/api/users", userRouter)
 app.use("/api/groups", groupRouter)
+app.use("/api/messages", messageRouter)
 
 
 //Start the server 
