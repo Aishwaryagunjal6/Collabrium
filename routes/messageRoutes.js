@@ -23,4 +23,16 @@ messageRouter.post("/", protect, async (req, res)=>{
   }
 })
 
+//fetch all the messages sent in a group
+messageRouter.get("/:groupId" , protect, async (req, res)=>{
+  try{
+    const messages = await Message.find({group: req.params.groupId}).populate("sender", "username email").sort({createdAt : -1})
+    res.json(messages)
+  }catch(error){
+    res.status(400).json({
+      message: error.message
+    })
+  }
+})
+
 module.exports = messageRouter
