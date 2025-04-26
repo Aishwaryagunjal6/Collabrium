@@ -38,11 +38,13 @@ const Sidebar = ({ setSelectedGroup }) => {
     fetchGroups();
   }, []);
 
+  // check if the login user is an Adminor not
   const checkAdminStatus = () => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo" || "{}"));
     setIsAdmin(userInfo?.isAdmin || false);
   };
 
+  // Function to fetch all the groups 
   const fetchGroups = async () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo" || "{}"));
@@ -93,6 +95,35 @@ const Sidebar = ({ setSelectedGroup }) => {
     }catch(error){
       toast({
         title: "Error Creating Group",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        description: error?.response?.data?.message || "An error occured"
+      })
+    }
+  }
+
+  // handle Join group
+  const handleJoinGroup = async(groupId)=>{
+    try{
+      const userInfo = JSON.parse(localStorage.getItem("userInfo" || "{}"));
+      const token = userInfo.token;
+      await axios.post(`http://localhost:3001/api/groups/${groupId}/join`,{},{
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      await fetchGroups()
+      setSelectedGroup(groups.find(g => g?._id === groupId))
+      toast({
+        title: "Joined group successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true
+      })
+    }catch(error){
+      toast({
+        title: "Error Joining Group",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -194,6 +225,7 @@ const Sidebar = ({ setSelectedGroup }) => {
                     userGroups.includes(group._id) ? "ghost" : "solid"
                   }
                   ml={3}
+                  onClick={()=> handleJoinGroup(group?._id)}
                   _hover={{
                     transform: userGroups.includes(group._id)
                       ? "scale(1.05)"
