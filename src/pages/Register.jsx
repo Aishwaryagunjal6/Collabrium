@@ -18,14 +18,14 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const toast = useToast()
-  const navigate = useNavigate
+  const navigate = useNavigate();
 
   // handle submit login
   const handleSubmit = async(e)=>{
     e.preventDefault()
     setLoading(true)
     try{
-      const { data } = await axios.post("http://localhost:3001/api/users/register", {email, password});
+      const { data } = await axios.post("http://localhost:3001/api/users/register", {username , email, password});
 
       navigate("/Login")
 
@@ -113,7 +113,7 @@ const Register = () => {
               </FormLabel>
               <Input
                 value={username}
-                onClick={(e)=>setUsername(e.target.value)}
+                onChange={(e)=>setUsername(e.target.value)}
                 type="text"
                 size="lg"
                 bg="gray.50"
@@ -130,7 +130,7 @@ const Register = () => {
               </FormLabel>
               <Input
                 value={email}
-                onClick={(e)=>setEmail(e.target.value)}
+                onChange={(e)=>setEmail(e.target.value)}
                 type="email"
                 size="lg"
                 bg="gray.50"
@@ -147,7 +147,7 @@ const Register = () => {
               </FormLabel>
               <Input
                 value={password}
-                onClick={(e)=>setPassword(e.target.value)}
+                onChange={(e)=>setPassword(e.target.value)}
                 type="password"
                 size="lg"
                 bg="gray.50"
