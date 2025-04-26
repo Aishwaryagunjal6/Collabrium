@@ -22,7 +22,7 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { FiLogOut, FiPlus, FiUsers } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Sidebar = ({ setSelectedGroup }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -32,7 +32,7 @@ const Sidebar = ({ setSelectedGroup }) => {
   const [newGroupDescription, setNewGroupDescription] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const toast = useToast();
-
+  const navigate = useNavigate();
   useEffect(() => {
     checkAdminStatus();
     fetchGroups();
@@ -113,8 +113,12 @@ const Sidebar = ({ setSelectedGroup }) => {
           Authorization: `Bearer ${token}`
         }
       })
-      await fetchGroups()
-      setSelectedGroup(groups.find(g => g?._id === groupId))
+      await fetchGroups(); // wait for groups to update
+        const updatedGroups = await axios.get("http://localhost:3001/api/groups", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      const joinedGroup = updatedGroups.data.find((g) => g._id === groupId);
+      setSelectedGroup(joinedGroup);
       toast({
         title: "Joined group successfully",
         status: "success",
@@ -130,6 +134,41 @@ const Sidebar = ({ setSelectedGroup }) => {
         description: error?.response?.data?.message || "An error occured"
       })
     }
+  }
+
+  // Logic to leave the group
+  const handleLeaveGroup = async (groupId) => {
+    try{
+      const userInfo = JSON.parse(localStorage.getItem("userInfo" || "{}"));
+      const token = userInfo.token;
+      await axios.post(`http://localhost:3001/api/groups/${groupId}/leave`,{},{
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      await fetchGroups()
+      setSelectedGroup(null)
+      toast({
+        title: "Left group successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true
+      })
+    }catch(error){
+      toast({
+        title: "Error Joining Group",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        description: error?.response?.data?.message || "An error occured"
+      })
+    }
+  }
+
+  // Logic to handle Logout
+  const handleLogOut = async () =>{
+    localStorage.removeItem('userInfo')
+    navigate('/login')
   }
 
   return (
@@ -225,7 +264,11 @@ const Sidebar = ({ setSelectedGroup }) => {
                     userGroups.includes(group._id) ? "ghost" : "solid"
                   }
                   ml={3}
-                  onClick={()=> handleJoinGroup(group?._id)}
+                  onClick={()=> {
+                  userGroups.includes(group?._id)  ? 
+                    handleLeaveGroup(group?._id) :
+                    handleJoinGroup(group?._id) 
+                  }}
                   _hover={{
                     transform: userGroups.includes(group._id)
                       ? "scale(1.05)"
@@ -256,10 +299,8 @@ const Sidebar = ({ setSelectedGroup }) => {
         width="100%"
       >
         <Button
-          as={Link}
-          to="/login"
-          width="full"
           variant="ghost"
+          onClick={handleLogOut}
           colorScheme="red"
           leftIcon={<Icon as={FiLogOut} />}
           _hover={{
