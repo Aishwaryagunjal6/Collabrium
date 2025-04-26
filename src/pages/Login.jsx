@@ -41,6 +41,8 @@ const Login = () => {
       })
       setLoading(false)
     }
+
+    setLoading(false)
   }
   return (
     <Box
