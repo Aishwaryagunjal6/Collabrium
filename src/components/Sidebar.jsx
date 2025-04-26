@@ -19,38 +19,50 @@ import {
   Badge,
   Tooltip,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { FiLogOut, FiPlus, FiUsers } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 const Sidebar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newGroupName, setNewGroupName] = useState("");
+  const [groups, setGroups] = useState([]);
   const [newGroupDescription, setNewGroupDescription] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const toast = useToast();
-  const isAdmin = true;
 
-  // Sample groups data
-  const groups = [
-    {
-      id: 1,
-      name: "Development Team",
-      description: "Main development team channel for daily updates",
-      isJoined: true,
-    },
-    {
-      id: 2,
-      name: "Design Team",
-      description: "Collaboration space for designers",
-      isJoined: false,
-    },
-    {
-      id: 3,
-      name: "Marketing",
-      description: "Marketing team discussions and campaigns",
-      isJoined: true,
-    },
-  ];
+  useEffect(()=>{
+    checkAdminStatus();
+    fetchGroups()
+  }, []);
+
+  // check if login user is an Admin
+  const checkAdminStatus = ()=>{
+    const userInfo = JSON.parse(localStorage.getItem('userInfo' || {}))
+    // console.log(userInfo)
+    // update admin status
+    setIsAdmin(userInfo?.isAdmin || false)
+  } 
+
+  // Function to fetch all groups
+  const fetchGroups= async ()=>{
+    try{
+      const userInfo = JSON.parse(localStorage.getItem('userInfo' || {}))
+      const token = userInfo.token
+      // console.log(token)
+      const {data} = await axios.get("http://localhost:3001/api/groups", {
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      })
+      // console.log(data)
+      setGroups(data)
+    }catch(error){
+
+    }
+  }
+
 
   return (
     <Box
